@@ -27,7 +27,7 @@ jobs:
       - name: Zip necessary files
         run: |
           mkdir deploy
-          cp -r .next public package.json package-lock.json node_modules next.config.js deploy
+          cp -r .next public package.json package-lock.json node_modules next.config.ts deploy
           cd deploy
           zip -r ../release.zip .
 
