@@ -24,20 +24,23 @@ jobs:
       - name: Build Next.js app (disable lint)
         run: npm run build --no-lint
 
-      - name: Verify .next folder exists
+      - name: Verify .next folder exists # このステップはログ確認用として残します
         run: |
           echo "Contents of .next directory:"
-          ls -l .next/ # .next フォルダの中身を確認
+          ls -l .next/
           if [ ! -d ".next" ]; then
             echo ".next directory was not created. Build might have failed or output to wrong location."
-            exit 1 # エラーとしてジョブを終了
+            exit 1
           fi
 
-      - name: Upload .next folder as artifact
+      - name: Archive .next folder # .next フォルダをtar.gzに圧縮するステップを追加
+        run: tar -czf nextjs-build-output.tar.gz ./.next
+
+      - name: Upload archived .next folder as artifact # 圧縮ファイルをアップロード
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build-output
-          path: ${{ github.workspace }}/.next # ここを絶対パスに修正
+          path: nextjs-build-output.tar.gz # 圧縮されたファイルを指定
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,7 +51,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nextjs-build-output
-          path: ./app-root
+          path: ./app-root # ダウンロードパス
+
+      - name: Extract archived .next folder # ダウンロードした圧縮ファイルを展開
+        run: tar -xzf ./app-root/nextjs-build-output.tar.gz -C ./app-root/
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -56,4 +62,4 @@ jobs:
           app-name: 'app-step4-30'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D29A8EE5EAA1438AAB1031E108B66CA7 }}
-          package: ./app-root/.next
+          package: ./app-root/.next # 展開された .next フォルダのパスを指定
