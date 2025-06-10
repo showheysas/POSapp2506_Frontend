@@ -19,13 +19,19 @@ jobs:
     - name: Install dependencies
       run: npm install --force # 依存関係のインストール
 
-    - name: Clean npm cache # ★このステップを新しく追加★
+    - name: Clean npm cache # このステップは念のため残しておきます
       run: npm cache clean --force
 
-    - name: Build Next.js app
-      run: npm run build # package.jsonのbuildスクリプトを呼び出すだけ
-      env: # このenvブロックで環境変数を渡す
-        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }} # secretsから値を渡す
+    - name: Debug Environment Variable (Temporary) # ★このデバッグステップを一時的に追加★
+      run: echo "NEXT_PUBLIC_API_URL as seen by shell: $NEXT_PUBLIC_API_URL"
+      env:
+        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+    - name: Build Next.js app # ★このステップを修正★
+      # 環境変数をnpm run buildコマンドに直接渡すことで、確実にNext.jsのビルドプロセスに認識させる
+      run: NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
+      # env: # ここにあったenvブロックはrunコマンドに統合したため削除します
+      #   NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
     - name: Upload production-ready assets
       uses: actions/upload-artifact@v4
@@ -52,6 +58,6 @@ jobs:
       with:
         app-name: 'app-step4-30' # App Service名
         slot-name: 'Production'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # この行を再度追加・確認
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Publish Profileを認証情報として使用
         package: . # ダウンロードしたアーティファクトが展開されるディレクトリ（カレントディレクトリ）
         # startup-command: 'node server.js' # App Serviceの構成で設定済みのため、削除またはコメントアウトを推奨
