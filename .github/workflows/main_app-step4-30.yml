@@ -23,9 +23,7 @@ jobs:
       run: npm cache clean --force
 
     - name: Debug Environment Variable (Temporary) # ★このデバッグステップを修正★
-      # env: ブロックを削除し、runコマンドで直接シークレットを参照します。
-      # これにより、シークレットの値がログに一時的に表示されます。
-      # 問題解決後に必ずこのステップを削除してください。
+      # 以前のenv:ブロックのコメント行も完全に削除しました
       run: echo "NEXT_PUBLIC_API_URL as seen by shell: ${{ secrets.NEXT_PUBLIC_API_URL }}" 
 
     - name: Build Next.js app
