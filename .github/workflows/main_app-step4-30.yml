@@ -33,13 +33,12 @@ jobs:
             exit 1
           fi
 
-      - name: Archive entire project for deployment # .nextとnode_modulesを含むプロジェクト全体を圧縮
+      - name: Archive standalone project for deployment # .next/standalone ディレクトリを圧縮対象とする
         run: |
-          # node_modules を除外しないように修正
-          # .git と .next/cache のみ除外
-          zip -r release.zip . \
-            -x "*.git*" \
-            -x ".next/cache/*"
+          # Next.js standalone output を圧縮
+          # .git や .next/cache は含まれないはずなので、除外設定は不要
+          zip -r release.zip ./.next/standalone \
+            -x "*.git*" # 念のため .git は除外
 
       - name: Upload project archive as artifact
         uses: actions/upload-artifact@v4
@@ -67,4 +66,4 @@ jobs:
           app-name: 'app-step4-30'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D29A8EE5EAA1438AAB1031E108B66CA7 }}
-          package: ./app-root/
+          package: ./app-root/.next/standalone # 展開された standalone フォルダをデプロイ対象とする
