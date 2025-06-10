@@ -33,22 +33,19 @@ jobs:
             exit 1
           fi
 
-      - name: Archive entire project for deployment # .nextだけでなく、プロジェクト全体を圧縮 (zipを使用)
+      - name: Archive entire project for deployment # .nextとnode_modulesを含むプロジェクト全体を圧縮
         run: |
-          # zip コマンドでプロジェクト全体を圧縮し、node_modules, .git, .next/cache を除外
-          # -r: 再帰的にディレクトリを圧縮
-          # -X: 拡張ファイル属性を含めない
-          # -x: 除外パターンを指定
+          # node_modules を除外しないように修正
+          # .git と .next/cache のみ除外
           zip -r release.zip . \
             -x "*.git*" \
-            -x "node_modules/*" \
             -x ".next/cache/*"
 
       - name: Upload project archive as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: full-project-archive # アーティファクト名を変更
-          path: release.zip # 圧縮されたプロジェクト全体をアップロード (zipファイル)
+          name: full-project-archive
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,11 +55,11 @@ jobs:
       - name: Download project archive
         uses: actions/download-artifact@v4
         with:
-          name: full-project-archive # アーティファクト名を合わせる
-          path: ./app-root # ダウンロードパス
+          name: full-project-archive
+          path: ./app-root
 
       - name: Extract project archive
-        run: unzip ./app-root/release.zip -d ./app-root/ # ダウンロードしたzipファイルを展開
+        run: unzip ./app-root/release.zip -d ./app-root/
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -70,4 +67,4 @@ jobs:
           app-name: 'app-step4-30'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D29A8EE5EAA1438AAB1031E108B66CA7 }}
-          package: ./app-root/ # 展開されたプロジェクトルートをデプロイ対象とする
+          package: ./app-root/
