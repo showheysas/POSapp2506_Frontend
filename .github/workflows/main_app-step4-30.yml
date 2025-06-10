@@ -72,4 +72,3 @@ jobs:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D29A8EE5EAA1438AAB1031E108B66CA7 }}
           package: ./app-root/extracted-standalone/ # 展開された standalone フォルダをデプロイ対象とする
           # Important: Set the startup command to directly run the generated server.js
-          startup-command: 'node server.js' # ここが最も重要
