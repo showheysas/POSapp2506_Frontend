@@ -22,7 +22,7 @@ jobs:
     - name: Clean npm cache # このステップは念のため残しておきます
       run: npm cache clean --force
 
-    - name: Debug Environment Variable (Temporary) 
+    - name: Debug Environment Variable (Temporary)
       run: echo "NEXT_PUBLIC_API_URL as seen by shell: ${{ secrets.NEXT_PUBLIC_API_URL }}" 
 
     - name: Build Next.js app
