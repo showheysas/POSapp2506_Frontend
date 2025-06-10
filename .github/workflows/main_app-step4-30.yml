@@ -24,7 +24,7 @@ jobs:
       - name: Build Next.js app (disable lint)
         run: npm run build --no-lint
 
-      - name: Verify .next folder exists # このステップはログ確認用として残します
+      - name: Verify .next folder exists
         run: |
           echo "Contents of .next directory:"
           ls -l .next/
@@ -33,28 +33,28 @@ jobs:
             exit 1
           fi
 
-      - name: Archive .next folder # .next フォルダをtar.gzに圧縮するステップを追加
-        run: tar -czf nextjs-build-output.tar.gz ./.next
+      - name: Archive entire project for deployment # .nextだけでなく、プロジェクト全体を圧縮
+        run: tar -czf release.tar.gz . --exclude='./node_modules' --exclude='./.git' --exclude='./.next/cache' # node_modules, .git, .next/cache は除外
 
-      - name: Upload archived .next folder as artifact # 圧縮ファイルをアップロード
+      - name: Upload project archive as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nextjs-build-output
-          path: nextjs-build-output.tar.gz # 圧縮されたファイルを指定
+          name: full-project-archive # アーティファクト名を変更
+          path: release.tar.gz # 圧縮されたプロジェクト全体をアップロード
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - name: Download artifact
+      - name: Download project archive
         uses: actions/download-artifact@v4
         with:
-          name: nextjs-build-output
+          name: full-project-archive # アーティファクト名を合わせる
           path: ./app-root # ダウンロードパス
 
-      - name: Extract archived .next folder # ダウンロードした圧縮ファイルを展開
-        run: tar -xzf ./app-root/nextjs-build-output.tar.gz -C ./app-root/
+      - name: Extract project archive
+        run: tar -xzf ./app-root/release.tar.gz -C ./app-root/ # ダウンロードした圧縮ファイルを展開
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -62,4 +62,4 @@ jobs:
           app-name: 'app-step4-30'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D29A8EE5EAA1438AAB1031E108B66CA7 }}
-          package: ./app-root/.next # 展開された .next フォルダのパスを指定
+          package: ./app-root/ # 展開されたプロジェクトルートをデプロイ対象とする
