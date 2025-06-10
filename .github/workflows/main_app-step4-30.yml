@@ -24,12 +24,9 @@ jobs:
       - name: Build Next.js app (disable lint)
         run: npm run build
 
-      - name: Zip necessary files
+      - name: Zip project for deployment
         run: |
-          mkdir deploy
-          cp -r .next public package.json package-lock.json node_modules next.config.ts deploy
-          cd deploy
-          zip -r ../release.zip .
+          zip -r release.zip . -x "*.git*" ".next/cache/*"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
