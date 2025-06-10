@@ -24,19 +24,19 @@ jobs:
       - name: Build Next.js app (disable lint)
         run: npm run build --no-lint
 
-      - name: Verify .next folder exists # 新しいステップを追加
+      - name: Verify .next folder exists
         run: |
-          ls -l .next/ # .next フォルダの中身を確認
+          ls -l .next/
           if [ ! -d ".next" ]; then
             echo ".next directory was not created. Build might have failed or output to wrong location."
-            exit 1 # エラーとしてジョブを終了
+            exit 1
           fi
 
       - name: Upload .next folder as artifact
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build-output
-          path: ./.next
+          path: ./.next/ # ここを修正: 末尾にスラッシュを追加
 
   deploy:
     runs-on: ubuntu-latest
