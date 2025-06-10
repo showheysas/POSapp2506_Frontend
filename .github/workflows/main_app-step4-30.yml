@@ -3,7 +3,7 @@ name: Deploy Next.js to Azure Web App
 on:
   push:
     branches:
-      - main
+      - main # main ブランチへのプッシュでトリガー
 
 jobs:
   build:
@@ -14,24 +14,24 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: '20.x' # App Service と同じバージョンを指定
 
     - name: Install dependencies
-      run: npm install --force
+      run: npm install --force # 依存関係のインストール
 
     - name: Build Next.js app
       run: npm run build # package.jsonのbuildスクリプトを呼び出すだけ
-      env: # ★このenvブロックを追加★
+      env: # ★このenvブロックで環境変数を渡す★
         NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }} # secretsから値を渡す
 
     - name: Upload production-ready assets
       uses: actions/upload-artifact@v4
       with:
-        name: nextjs-standalone-output
-        path: ./.next/standalone
+        name: nextjs-standalone-output # アーティファクト名
+        path: ./.next/standalone # Next.jsのstandaloneビルドの出力パス
 
   deploy:
-    needs: build
+    needs: build # build ジョブが成功した後に実行
     runs-on: ubuntu-latest
     environment:
       name: 'Production'
@@ -41,14 +41,18 @@ jobs:
     - name: Download artifact from build job
       uses: actions/download-artifact@v4
       with:
-        name: nextjs-standalone-output
+        name: nextjs-standalone-output # build ジョブでアップロードしたアーティファクト名と一致させる
+
+    - name: 'Azure Login'
+      uses: azure/login@v1 # または v2
+      with:
+        creds: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Publish Profileを認証情報として使用
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'app-step4-30'
+        app-name: 'app-step4-30' # App Service名
         slot-name: 'Production'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: .
-        # startup-command: 'node server.js' # App Serviceの構成で設定済みのため、この行は削除またはコメントアウトを推奨
+        package: . # ダウンロードしたアーティファクトが展開されるディレクトリ（カレントディレクトリ）
+        # startup-command: 'node server.js' # App Serviceの構成で設定済みのため、削除またはコメントアウトを推奨
