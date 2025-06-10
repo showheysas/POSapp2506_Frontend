@@ -22,16 +22,15 @@ jobs:
     - name: Clean npm cache # このステップは念のため残しておきます
       run: npm cache clean --force
 
-    - name: Debug Environment Variable (Temporary) # ★このデバッグステップを一時的に追加★
-      run: echo "NEXT_PUBLIC_API_URL as seen by shell: $NEXT_PUBLIC_API_URL"
-      env:
-        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+    - name: Debug Environment Variable (Temporary) # ★このデバッグステップを修正★
+      # env: ブロックを削除し、runコマンドで直接シークレットを参照します。
+      # これにより、シークレットの値がログに一時的に表示されます。
+      # 問題解決後に必ずこのステップを削除してください。
+      run: echo "NEXT_PUBLIC_API_URL as seen by shell: ${{ secrets.NEXT_PUBLIC_API_URL }}" 
 
-    - name: Build Next.js app # ★このステップを修正★
-      # 環境変数をnpm run buildコマンドに直接渡すことで、確実にNext.jsのビルドプロセスに認識させる
+    - name: Build Next.js app
       run: NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
-      # env: # ここにあったenvブロックはrunコマンドに統合したため削除します
-      #   NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+      # env: はこのステップから削除済みです
 
     - name: Upload production-ready assets
       uses: actions/upload-artifact@v4
@@ -60,4 +59,3 @@ jobs:
         slot-name: 'Production'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Publish Profileを認証情報として使用
         package: . # ダウンロードしたアーティファクトが展開されるディレクトリ（カレントディレクトリ）
-        # startup-command: 'node server.js' # App Serviceの構成で設定済みのため、削除またはコメントアウトを推奨
