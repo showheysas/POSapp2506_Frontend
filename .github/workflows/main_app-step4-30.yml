@@ -22,17 +22,13 @@ jobs:
         run: npm install
 
       - name: Build Next.js app (disable lint)
-        run: npm run build
+        run: npm run build --no-lint  # ここに --no-lint を追加してローカルと同じに
 
-      - name: Zip project for deployment
-        run: |
-          zip -r release.zip . -x "**/.git*" "**/.next/cache*" "**/test-output*" "**/coverage*"
-
-      - name: Upload artifact
+      - name: Upload .next folder as artifact # ここを変更
         uses: actions/upload-artifact@v4
         with:
-          name: nextjs-app
-          path: release.zip
+          name: nextjs-build-output # アーティファクトの名前を変更
+          path: ./.next # .next フォルダを直接アップロード
 
   deploy:
     runs-on: ubuntu-latest
@@ -42,10 +38,8 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: nextjs-app
-
-      - name: Unzip artifact
-        run: unzip release.zip
+          name: nextjs-build-output # アーティファクトの名前を合わせる
+          path: ./app-root # 任意のディレクトリにダウンロード (例: app-root)
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -53,4 +47,7 @@ jobs:
           app-name: 'app-step4-30'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D29A8EE5EAA1438AAB1031E108B66CA7 }}
-          package: .
+          # package: . を変更し、.next フォルダを直接デプロイ対象とする
+          package: ./app-root/.next # ダウンロードした .next フォルダのパスを指定
+          # スタートアップコマンドは Azure Portal で npm run start に設定済みのはずなので、ここでは不要
+          # startup-command: npm run start # もしデプロイアクションで設定する必要がある場合はここに追加
