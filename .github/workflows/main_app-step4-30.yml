@@ -32,13 +32,17 @@ jobs:
             echo ".next directory was not created. Build might have failed or output to wrong location."
             exit 1
           fi
+          # standalone ディレクトリも確認（オプション）
+          echo "Contents of .next/standalone directory:"
+          ls -l .next/standalone/
 
-      - name: Archive standalone project for deployment # .next/standalone ディレクトリを圧縮対象とする
+      - name: Archive standalone project for deployment
         run: |
           # Next.js standalone output を圧縮
           # .git や .next/cache は含まれないはずなので、除外設定は不要
-          zip -r release.zip ./.next/standalone \
-            -x "*.git*" # 念のため .git は除外
+          # .next/standalone ディレクトリの中身を直接圧縮する
+          # zip のカレントディレクトリを .next/standalone に変更し、その中身をzipする
+          cd ./.next/standalone && zip -r ../../release.zip .
 
       - name: Upload project archive as artifact
         uses: actions/upload-artifact@v4
@@ -58,7 +62,7 @@ jobs:
           path: ./app-root
 
       - name: Extract project archive
-        run: unzip ./app-root/release.zip -d ./app-root/
+        run: unzip ./app-root/release.zip -d ./app-root/extracted-standalone/ # 展開先を変更
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -66,4 +70,6 @@ jobs:
           app-name: 'app-step4-30'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D29A8EE5EAA1438AAB1031E108B66CA7 }}
-          package: ./app-root/.next/standalone # 展開された standalone フォルダをデプロイ対象とする
+          package: ./app-root/extracted-standalone/ # 展開された standalone フォルダをデプロイ対象とする
+          # Important: Set the startup command to directly run the generated server.js
+          startup-command: 'node server.js' # ここが最も重要
