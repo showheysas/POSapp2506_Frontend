@@ -3,7 +3,7 @@ name: Deploy Next.js to Azure Web App
 on:
   push:
     branches:
-      - main # main ブランチへのプッシュでトリガー
+      - main
 
 jobs:
   build:
@@ -14,29 +14,28 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x' # App Service と同じバージョンを指定
+        node-version: '20.x'
 
     - name: Install dependencies
-      run: npm install --force # 依存関係のインストール
+      run: npm install --force
 
-    - name: Clean npm cache # このステップは念のため残しておきます
+    - name: Clean npm cache
       run: npm cache clean --force
 
     - name: Debug Environment Variable (Temporary)
-      run: echo "NEXT_PUBLIC_API_URL as seen by shell: ${{ secrets.NEXT_PUBLIC_API_URL }}" 
+      run: echo "NEXT_PUBLIC_API_URL as seen by shell: ${{ secrets.NEXT_PUBLIC_API_URL }}"
 
     - name: Build Next.js app
       run: NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
-      # env: はこのステップから削除済みです
 
     - name: Upload production-ready assets
       uses: actions/upload-artifact@v4
       with:
-        name: nextjs-standalone-output # アーティファクト名
-        path: ./.next/standalone # Next.jsのstandaloneビルドの出力パス
+        name: nextjs-standalone-output
+        path: ./.next/standalone
 
   deploy:
-    needs: build # build ジョブが成功した後に実行
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: 'Production'
@@ -46,13 +45,13 @@ jobs:
     - name: Download artifact from build job
       uses: actions/download-artifact@v4
       with:
-        name: nextjs-standalone-output # build ジョブでアップロードしたアーティファクト名と一致させる
+        name: nextjs-standalone-output
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v3
       with:
-        app-name: 'app-step4-30' # App Service名
+        app-name: 'app-step4-30'
         slot-name: 'Production'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Publish Profileを認証情報として使用
-        package: . # ダウンロードしたアーティファクトが展開されるディレクトリ（カレントディレクトリ）
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: .
