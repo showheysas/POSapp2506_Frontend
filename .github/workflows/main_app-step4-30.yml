@@ -21,7 +21,7 @@ jobs:
 
     - name: Build Next.js app
       run: npm run build # package.jsonのbuildスクリプトを呼び出すだけ
-      env: # ★このenvブロックで環境変数を渡す★
+      env: # このenvブロックで環境変数を渡す
         NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }} # secretsから値を渡す
 
     - name: Upload production-ready assets
@@ -43,10 +43,10 @@ jobs:
       with:
         name: nextjs-standalone-output # build ジョブでアップロードしたアーティファクト名と一致させる
 
-    - name: 'Azure Login'
-      uses: azure/login@v1 # または v2
-      with:
-        creds: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Publish Profileを認証情報として使用
+    # - name: 'Azure Login' # ★このステップを完全に削除します★
+    #   uses: azure/login@v1
+    #   with:
+    #     creds: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
     - name: 'Deploy to Azure Web App'
       id: deploy-to-webapp
@@ -54,5 +54,6 @@ jobs:
       with:
         app-name: 'app-step4-30' # App Service名
         slot-name: 'Production'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # ★この行を再度追加・確認★
         package: . # ダウンロードしたアーティファクトが展開されるディレクトリ（カレントディレクトリ）
         # startup-command: 'node server.js' # App Serviceの構成で設定済みのため、削除またはコメントアウトを推奨
