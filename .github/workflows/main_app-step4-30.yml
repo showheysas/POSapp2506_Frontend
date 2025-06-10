@@ -33,15 +33,22 @@ jobs:
             exit 1
           fi
 
-      - name: Archive entire project for deployment # .nextだけでなく、プロジェクト全体を圧縮
-        # tar コマンドを一行で記述し、オプションの順序を修正
-        run: tar -czf release.tar.gz --exclude='./node_modules' --exclude='./.git' --exclude='./.next/cache' .
+      - name: Archive entire project for deployment # .nextだけでなく、プロジェクト全体を圧縮 (zipを使用)
+        run: |
+          # zip コマンドでプロジェクト全体を圧縮し、node_modules, .git, .next/cache を除外
+          # -r: 再帰的にディレクトリを圧縮
+          # -X: 拡張ファイル属性を含めない
+          # -x: 除外パターンを指定
+          zip -r release.zip . \
+            -x "*.git*" \
+            -x "node_modules/*" \
+            -x ".next/cache/*"
 
       - name: Upload project archive as artifact
         uses: actions/upload-artifact@v4
         with:
           name: full-project-archive # アーティファクト名を変更
-          path: release.tar.gz # 圧縮されたプロジェクト全体をアップロード
+          path: release.zip # 圧縮されたプロジェクト全体をアップロード (zipファイル)
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,7 +62,7 @@ jobs:
           path: ./app-root # ダウンロードパス
 
       - name: Extract project archive
-        run: tar -xzf ./app-root/release.tar.gz -C ./app-root/ # ダウンロードした圧縮ファイルを展開
+        run: unzip ./app-root/release.zip -d ./app-root/ # ダウンロードしたzipファイルを展開
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
