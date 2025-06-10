@@ -34,13 +34,8 @@ jobs:
           fi
 
       - name: Archive entire project for deployment # .nextだけでなく、プロジェクト全体を圧縮
-        run: |
-          # --exclude オプションを圧縮対象の '.' の前に移動
-          tar -czf release.tar.gz \
-          --exclude='./node_modules' \
-          --exclude='./.git' \
-          --exclude='./.next/cache' \
-          . # 圧縮対象のディレクトリ
+        # tar コマンドを一行で記述し、オプションの順序を修正
+        run: tar -czf release.tar.gz --exclude='./node_modules' --exclude='./.git' --exclude='./.next/cache' .
 
       - name: Upload project archive as artifact
         uses: actions/upload-artifact@v4
