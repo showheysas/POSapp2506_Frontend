@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Use Node.js
-      uses: actions/setup-node@v4
+      uses: actions:setup-node@v4
       with:
         node-version: '20.x'
 
@@ -21,6 +21,15 @@ jobs:
 
     - name: Clean npm cache
       run: npm cache clean --force
+
+    - name: Debug NEXT_PUBLIC_API_URL before build # ★このステップを追加★
+      run: |
+        echo "Value from secret: ${{ secrets.NEXT_PUBLIC_API_URL }}"
+        echo "Length of secret value: ${{ secrets.NEXT_PUBLIC_API_URL | length }}"
+        # 環境変数として設定された値も確認 (これはnpm run buildで渡す形式なのでここでは未設定かも)
+        echo "NEXT_PUBLIC_API_URL env var (if set): $NEXT_PUBLIC_API_URL"
+      env: # このenvブロックは、次のrunで参照される変数を設定
+        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }} # シークレットの値をこのステップの環境変数に設定
 
     - name: Build Next.js app
       run: NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
