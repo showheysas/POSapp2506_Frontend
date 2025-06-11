@@ -23,11 +23,11 @@ jobs:
       run: npm cache clean --force
 
     - name: Debug NEXT_PUBLIC_API_URL before build # ★このデバッグステップを修正★
+      # envブロックを削除し、runコマンド内で直接環境変数を渡す
       run: echo "Value from secret: ${{ secrets.NEXT_PUBLIC_API_URL }}"
-      env: # このenvブロックで、このステップのrunコマンドに環境変数を渡す
-        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }} # シークレットの値をこのステップの環境変数に設定
 
     - name: Build Next.js app
+      # 環境変数をnpm run buildコマンドに直接渡す方式に戻す
       run: NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }} npm run build
 
     - name: Upload production-ready assets
