@@ -22,12 +22,8 @@ jobs:
     - name: Clean npm cache
       run: npm cache clean --force
 
-    - name: Debug NEXT_PUBLIC_API_URL before build # ★デバッグステップを修正★
-      run: |
-        echo "Value from secret: ${{ secrets.NEXT_PUBLIC_API_URL }}"
-        # lengthフィルターがエラーになるため、一時的に削除
-        # echo "Length of secret value: ${{ secrets.NEXT_PUBLIC_API_URL | length }}" 
-        echo "NEXT_PUBLIC_API_URL env var (if set in this step's env block): $NEXT_PUBLIC_API_URL"
+    - name: Debug NEXT_PUBLIC_API_URL before build # ★このデバッグステップを修正★
+      run: echo "Value from secret: ${{ secrets.NEXT_PUBLIC_API_URL }}"
       env: # このenvブロックで、このステップのrunコマンドに環境変数を渡す
         NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }} # シークレットの値をこのステップの環境変数に設定
 
