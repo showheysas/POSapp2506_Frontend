@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Use Node.js
-      uses: actions/setup-node@v4 # コロンをスラッシュに修正済み
+      uses: actions/setup-node@v4
       with:
         node-version: '20.x'
 
@@ -22,10 +22,11 @@ jobs:
     - name: Clean npm cache
       run: npm cache clean --force
 
-    - name: Debug NEXT_PUBLIC_API_URL before build # ★このデバッグステップを再度追加★
+    - name: Debug NEXT_PUBLIC_API_URL before build # ★デバッグステップを修正★
       run: |
         echo "Value from secret: ${{ secrets.NEXT_PUBLIC_API_URL }}"
-        echo "Length of secret value: ${{ secrets.NEXT_PUBLIC_API_URL | length }}"
+        # lengthフィルターがエラーになるため、一時的に削除
+        # echo "Length of secret value: ${{ secrets.NEXT_PUBLIC_API_URL | length }}" 
         echo "NEXT_PUBLIC_API_URL env var (if set in this step's env block): $NEXT_PUBLIC_API_URL"
       env: # このenvブロックで、このステップのrunコマンドに環境変数を渡す
         NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }} # シークレットの値をこのステップの環境変数に設定
